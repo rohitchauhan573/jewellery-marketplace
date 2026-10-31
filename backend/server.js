@@ -1,3 +1,14 @@
+const pool = require('./config/db');
+
+app.get('/categories', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM categories ORDER BY id');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
