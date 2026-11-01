@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const db = require('./config/db');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 app.use(cors());
@@ -11,6 +12,8 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.json({ message: 'Jewellery marketplace API is running' });
 });
+
+app.use('/auth', authRoutes);
 
 app.get('/categories', (req, res) => {
   try {
