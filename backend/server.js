@@ -1,17 +1,8 @@
-const pool = require('./config/db');
-
-app.get('/categories', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM categories ORDER BY id');
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Database error' });
-  }
-});
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+
+const db = require('./config/db');
 
 const app = express();
 app.use(cors());
@@ -21,5 +12,21 @@ app.get('/', (req, res) => {
   res.json({ message: 'Jewellery marketplace API is running' });
 });
 
+app.get('/categories', (req, res) => {
+  try {
+    const rows = db.prepare('SELECT * FROM categories ORDER BY id').all();
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, (err) => {
+  if (err) {
+    console.error('Could not start server:', err.message);
+    process.exit(1);
+  }
+  console.log(`Server running on port ${PORT}`);
+});
