@@ -5,3 +5,5 @@ node_modules
 node_modules
 .env
 database/jewellery.db
+database/jewellery.db-wal
+database/jewellery.db-shm

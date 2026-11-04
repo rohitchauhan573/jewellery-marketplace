@@ -6,6 +6,9 @@ const dbFolder = path.join(__dirname, '..', '..', 'database');
 const dbFile = path.join(dbFolder, 'jewellery.db');
 const db = new DatabaseSync(dbFile);
 
+// Lock hone par error dene ki jagah 5 second intezaar karo
+db.exec('PRAGMA busy_timeout = 5000;');
+db.exec('PRAGMA journal_mode = WAL;');
 db.exec('PRAGMA foreign_keys = ON;');
 db.exec(fs.readFileSync(path.join(dbFolder, 'schema.sql'), 'utf8'));
 db.exec(fs.readFileSync(path.join(dbFolder, 'seed.sql'), 'utf8'));
