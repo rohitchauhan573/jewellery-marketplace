@@ -4,6 +4,8 @@ require('dotenv').config();
 
 const db = require('./config/db');
 const authRoutes = require('./routes/auth');
+const shopRoutes = require('./routes/shops');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 app.use(cors());
@@ -14,6 +16,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/shops', shopRoutes);
+app.use('/admin', adminRoutes);
 
 app.get('/categories', (req, res) => {
   try {
