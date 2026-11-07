@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JewelHub - Jewellery Marketplace</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">JewelHub</a>
+    <span class="tagline">Jewellery from trusted local shops</span>
+  </header>
+
+  <main class="container">
+    <section class="filters">
+      <input id="q" type="search" placeholder="Search jewellery...">
+      <select id="category"><option value="">All categories</option></select>
+      <select id="purity">
+        <option value="">Any purity</option>
+        <option value="24K">24K</option>
+        <option value="22K">22K</option>
+        <option value="18K">18K</option>
+      </select>
+      <select id="gender">
+        <option value="">Everyone</option>
+        <option value="women">Women</option>
+        <option value="men">Men</option>
+        <option value="unisex">Unisex</option>
+      </select>
+      <input id="min_price" type="number" min="0" placeholder="Min price">
+      <input id="max_price" type="number" min="0" placeholder="Max price">
+      <button id="apply" type="button">Apply</button>
+      <button id="reset" type="button" class="secondary">Reset</button>
+    </section>
+
+    <p id="status" class="status"></p>
+    <section id="grid" class="grid"></section>
+  </main>
+
+  <footer class="site-footer">JewelHub project demo</footer>
+  <script src="js/main.js"></script>
+</body>
+</html>
