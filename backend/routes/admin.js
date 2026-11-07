@@ -35,4 +35,12 @@ router.patch('/shops/:id/status', (req, res) => {
   res.json({ message: `Shop ${status}` });
 });
 
+// Product ko Verified mark karna
+router.patch('/products/:id/verify', (req, res) => {
+  const verified = req.body.is_verified ? 1 : 0;
+  const result = db.prepare('UPDATE products SET is_verified = ? WHERE id = ?').run(verified, req.params.id);
+  if (result.changes === 0) return res.status(404).json({ error: 'Product not found' });
+  res.json({ message: verified ? 'Product verified' : 'Verification removed' });
+});
+
 module.exports = router;
