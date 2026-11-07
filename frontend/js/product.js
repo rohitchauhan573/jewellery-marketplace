@@ -1,4 +1,4 @@
-const API = 'http://localhost:5000';
+
 
 const statusEl = document.getElementById('status');
 const detail = document.getElementById('detail');

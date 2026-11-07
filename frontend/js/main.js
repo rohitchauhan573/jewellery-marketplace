@@ -1,4 +1,4 @@
-const API = 'http://localhost:5000';
+
 
 const grid = document.getElementById('grid');
 const statusEl = document.getElementById('status');

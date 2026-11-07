@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My shop - JewelHub</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">JewelHub</a>
+    <span class="tagline">Jewellery from trusted local shops</span>
+    <nav id="nav" class="nav"></nav>
+  </header>
+
+  <main class="container narrow">
+    <h1>My shop</h1>
+    <p id="status" class="status"></p>
+
+    <section id="create-shop" class="panel" hidden>
+      <h2>Create your shop</h2>
+      <p class="note">The admin will review your shop before you can add jewellery.</p>
+      <form id="shop-form" class="form">
+        <label>Shop name <input id="shop-name" required></label>
+        <label>City <input id="shop-city"></label>
+        <label>Licence / GST number <input id="shop-licence"></label>
+        <p id="shop-msg" class="notice" hidden></p>
+        <button type="submit">Submit shop for approval</button>
+      </form>
+    </section>
+
+    <section id="shop-info" class="panel" hidden>
+      <h2 id="shop-title"></h2>
+      <p id="shop-meta" class="note"></p>
+      <span id="shop-badge" class="status-badge"></span>
+      <p id="shop-note" class="note"></p>
+    </section>
+
+    <section id="add-product" class="panel" hidden>
+      <h2>Add jewellery</h2>
+      <form id="product-form" class="form">
+        <div class="form-grid">
+          <label>Title <input id="p-title" required></label>
+          <label>Category
+            <select id="p-category" required><option value="">Choose category</option></select>
+          </label>
+          <label>Metal
+            <select id="p-metal">
+              <option value="gold">Gold</option>
+              <option value="silver">Silver</option>
+              <option value="platinum">Platinum</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Purity
+            <select id="p-purity">
+              <option value="22K">22K</option>
+              <option value="24K">24K</option>
+              <option value="18K">18K</option>
+              <option value="925">925 (silver)</option>
+              <option value="">Not applicable</option>
+            </select>
+          </label>
+          <label>Weight (grams) <input id="p-weight" type="number" min="0" step="0.01"></label>
+          <label>Making charges (Rs) <input id="p-making" type="number" min="0" step="1"></label>
+          <label>Selling price (Rs) <input id="p-price" type="number" min="1" step="1" required></label>
+          <label>Stock <input id="p-stock" type="number" min="1" step="1" value="1"></label>
+          <label>For
+            <select id="p-gender">
+              <option value="women">Women</option>
+              <option value="men">Men</option>
+              <option value="unisex">Unisex</option>
+            </select>
+          </label>
+          <label>Occasion
+            <select id="p-occasion">
+              <option value="">Any</option>
+              <option value="daily">Daily wear</option>
+              <option value="festive">Festive</option>
+              <option value="bridal">Bridal</option>
+              <option value="party">Party</option>
+              <option value="gift">Gift</option>
+              <option value="engagement">Engagement</option>
+            </select>
+          </label>
+          <label>Stone (optional) <input id="p-stone" placeholder="diamond, ruby..."></label>
+          <label>Size / length (optional) <input id="p-size" placeholder="ring size, chain length..."></label>
+        </div>
+        <label>Photo link (optional, starts with https://) <input id="p-image" type="url"></label>
+        <label>Description (optional) <textarea id="p-desc" rows="3"></textarea></label>
+        <p class="note">The fair-price meter works for gold items with 24K, 22K or 18K purity and a weight.</p>
+        <p id="product-msg" class="notice" hidden></p>
+        <button id="product-submit" type="submit">Add jewellery</button>
+      </form>
+    </section>
+
+    <section id="my-products" class="panel" hidden>
+      <h2>My jewellery <span id="product-count" class="note"></span></h2>
+      <div id="product-list" class="table-wrap"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">JewelHub project demo</footer>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
