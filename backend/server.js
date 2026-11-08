@@ -3,12 +3,12 @@ const cors = require('cors');
 require('dotenv').config();
 
 const db = require('./config/db');
-const bootstrap = require('./bootstrap');
 const authRoutes = require('./routes/auth');
 const shopRoutes = require('./routes/shops');
 const adminRoutes = require('./routes/admin');
 const productRoutes = require('./routes/products');
 const rateRoutes = require('./routes/rates');
+const orderRoutes = require('./routes/orders');
 
 const app = express();
 app.use(cors());
@@ -23,6 +23,7 @@ app.use('/shops', shopRoutes);
 app.use('/admin', adminRoutes);
 app.use('/products', productRoutes);
 app.use('/gold-rate', rateRoutes);
+app.use('/orders', orderRoutes);
 
 app.get('/categories', (req, res) => {
   try {
@@ -39,16 +40,22 @@ app.use((req, res) => {
   res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });
 });
 
-const PORT = process.env.PORT || 5000;
-
-bootstrap()
-  .catch((err) => console.error('Bootstrap failed:', err.message))
-  .then(() => {
-    app.listen(PORT, (err) => {
-      if (err) {
-        console.error('Could not start server:', err.message);
-        process.exit(1);
-      }
-      console.log(`Server running on port ${PORT}`);
+// Koi bhi bacha hua error yahan aayega
+app.use((err, req, res, next) => {
+  if (/FOREIGN KEY/i.test(String(err && err.message))) {
+    return res.status(409).json({
+      error: 'This item is part of an order, so it cannot be deleted. Set its stock to 0 instead.',
     });
-  });
+  }
+  console.error(err);
+  res.status(500).json({ error: 'Server error' });
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, (err) => {
+  if (err) {
+    console.error('Could not start server:', err.message);
+    process.exit(1);
+  }
+  console.log(`Server running on port ${PORT}`);
+});

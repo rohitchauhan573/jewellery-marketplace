@@ -1,8 +1,11 @@
-
-
 const grid = document.getElementById('grid');
 const statusEl = document.getElementById('status');
 const categorySelect = document.getElementById('category');
+const chipsBox = document.getElementById('chips');
+const titleEl = document.getElementById('page-title');
+
+const FIELDS = ['q', 'category', 'purity', 'gender', 'min_price', 'max_price'];
+let categories = [];
 
 function money(n) {
   return '\u20B9' + Number(n).toLocaleString('en-IN');
@@ -51,20 +54,64 @@ function card(p) {
   price.textContent = money(p.price);
 
   body.append(title, meta, shop, price);
+
+  if (typeof p.stock === 'number' && p.stock > 0 && p.stock <= 3) {
+    const low = document.createElement('p');
+    low.className = 'stock-note';
+    low.textContent = 'Only ' + p.stock + ' left';
+    body.appendChild(low);
+  }
+
   link.append(thumb, body);
   return link;
 }
 
+function categoryName(id) {
+  const c = categories.find((x) => String(x.id) === String(id));
+  return c ? c.name : null;
+}
+
+function markChips() {
+  const current = categorySelect.value;
+  chipsBox.querySelectorAll('button').forEach((b) => {
+    b.classList.toggle('active', b.dataset.id === current);
+  });
+}
+
+function syncUrl() {
+  const url = new URL(location.href);
+  if (categorySelect.value) url.searchParams.set('category', categorySelect.value);
+  else url.searchParams.delete('category');
+  history.replaceState(null, '', url);
+}
+
+function addChip(label, id) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chip';
+  b.dataset.id = String(id);
+  b.textContent = label;
+  b.addEventListener('click', () => {
+    categorySelect.value = String(id);
+    loadProducts();
+  });
+  chipsBox.appendChild(b);
+}
+
 async function loadCategories() {
   try {
-    const res = await fetch(API + '/categories');
-    const rows = await res.json();
-    rows.forEach((c) => {
+    categories = await apiFetch('/categories');
+    addChip('All', '');
+    categories.forEach((c) => {
       const opt = document.createElement('option');
       opt.value = c.id;
       opt.textContent = c.name;
       categorySelect.appendChild(opt);
+      addChip(c.name, c.id);
     });
+
+    const wanted = new URLSearchParams(location.search).get('category');
+    if (wanted && categoryName(wanted)) categorySelect.value = wanted;
   } catch (err) {
     statusEl.textContent = 'Could not reach the server. Is the backend running?';
   }
@@ -72,21 +119,21 @@ async function loadCategories() {
 
 async function loadProducts() {
   const params = new URLSearchParams();
-  const fields = ['q', 'category', 'purity', 'gender', 'min_price', 'max_price'];
-  fields.forEach((id) => {
+  FIELDS.forEach((id) => {
     const value = document.getElementById(id).value.trim();
     if (!value) return;
     params.set(id === 'category' ? 'category_id' : id, value);
   });
 
+  titleEl.textContent = categoryName(categorySelect.value) || 'All jewellery';
+  markChips();
+  syncUrl();
+
   statusEl.textContent = 'Loading...';
   grid.replaceChildren();
 
   try {
-    const res = await fetch(API + '/products?' + params.toString());
-    const rows = await res.json();
-    if (!res.ok) throw new Error(rows.error || 'Request failed');
-
+    const rows = await apiFetch('/products?' + params.toString());
     statusEl.textContent = rows.length
       ? rows.length + ' item' + (rows.length === 1 ? '' : 's') + ' found'
       : 'No jewellery found. Try changing the filters.';
@@ -98,14 +145,12 @@ async function loadProducts() {
 
 document.getElementById('apply').addEventListener('click', loadProducts);
 document.getElementById('reset').addEventListener('click', () => {
-  ['q', 'category', 'purity', 'gender', 'min_price', 'max_price'].forEach((id) => {
-    document.getElementById(id).value = '';
-  });
+  FIELDS.forEach((id) => { document.getElementById(id).value = ''; });
   loadProducts();
 });
 document.getElementById('q').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') loadProducts();
 });
+categorySelect.addEventListener('change', loadProducts);
 
-loadCategories();
-loadProducts();
+loadCategories().then(loadProducts);

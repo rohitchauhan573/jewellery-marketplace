@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cart - Jewellery Wala</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">Jewellery Wala</a>
+    <span class="tagline">Jewellery from trusted local shops</span>
+    <nav id="nav" class="nav"></nav>
+  </header>
+
+  <main class="container narrow">
+    <h1>Your cart</h1>
+    <p id="status" class="status"></p>
+
+    <section id="cart-panel" class="panel" hidden>
+      <div id="cart-list" class="table-wrap"></div>
+      <p class="total">Total: <span id="total"></span></p>
+      <button id="clear" type="button" class="secondary small">Clear cart</button>
+    </section>
+
+    <section id="checkout" class="panel" hidden>
+      <h2>Checkout</h2>
+      <form id="checkout-form" class="form">
+        <label>Phone number (the delivery partner will call this)
+          <input id="phone" type="tel" required>
+        </label>
+        <label>Delivery address
+          <textarea id="address" rows="3" required></textarea>
+        </label>
+        <p class="note">Payment: cash on delivery. After you order, you get a 4-digit delivery code. Share it only when you receive your jewellery.</p>
+        <p id="msg" class="notice" hidden></p>
+        <button id="place" type="submit">Place order</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">Jewellery Wala project demo</footer>
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+</body>
+</html>

@@ -18,6 +18,7 @@ async function doLogin(email, password) {
 function goAfterLogin(user) {
   if (user.role === 'admin') location.href = 'admin.html';
   else if (user.role === 'shop_owner') location.href = 'dashboard.html';
+  else if (user.role === 'delivery') location.href = 'delivery.html';
   else location.href = 'index.html';
 }
 
@@ -53,11 +54,12 @@ if (registerForm) {
 
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
     const role = document.getElementById('role').value;
 
     try {
-      await apiFetch('/auth/register', { method: 'POST', body: { name, email, password, role } });
+      await apiFetch('/auth/register', { method: 'POST', body: { name, email, phone, password, role } });
       const user = await doLogin(email, password);
       goAfterLogin(user);
     } catch (err) {

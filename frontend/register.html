@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Register - JewelHub</title>
+  <title>Register - Jewellery Wala</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="index.html">JewelHub</a>
+    <a class="brand" href="index.html">Jewellery Wala</a>
     <span class="tagline">Jewellery from trusted local shops</span>
     <nav id="nav" class="nav"></nav>
   </header>
@@ -19,6 +19,7 @@
       <form id="register-form" class="form">
         <label>Full name <input id="name" required autocomplete="name"></label>
         <label>Email <input id="email" type="email" required autocomplete="email"></label>
+        <label>Phone number <input id="phone" type="tel" required autocomplete="tel" placeholder="10 digit mobile number"></label>
         <label>Password (at least 6 characters)
           <input id="password" type="password" minlength="6" required autocomplete="new-password">
         </label>
@@ -26,6 +27,7 @@
           <select id="role">
             <option value="customer">Buy jewellery (customer)</option>
             <option value="shop_owner">Sell jewellery (shop owner)</option>
+            <option value="delivery">Deliver orders (delivery partner)</option>
           </select>
         </label>
         <p id="msg" class="notice" hidden></p>
@@ -35,7 +37,7 @@
     </section>
   </main>
 
-  <footer class="site-footer">JewelHub project demo</footer>
+  <footer class="site-footer">Jewellery Wala project demo</footer>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
 </body>

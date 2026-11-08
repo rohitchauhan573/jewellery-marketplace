@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My shop - JewelHub</title>
+  <title>My shop - Jewellery Wala</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="index.html">JewelHub</a>
+    <a class="brand" href="index.html">Jewellery Wala</a>
     <span class="tagline">Jewellery from trusted local shops</span>
     <nav id="nav" class="nav"></nav>
   </header>
@@ -23,6 +23,10 @@
       <form id="shop-form" class="form">
         <label>Shop name <input id="shop-name" required></label>
         <label>City <input id="shop-city"></label>
+        <label>Shop address (delivery partners pick up from here)
+          <textarea id="shop-address" rows="2" required></textarea>
+        </label>
+        <label>Shop phone <input id="shop-phone" type="tel" required></label>
         <label>Licence / GST number <input id="shop-licence"></label>
         <p id="shop-msg" class="notice" hidden></p>
         <button type="submit">Submit shop for approval</button>
@@ -34,6 +38,17 @@
       <p id="shop-meta" class="note"></p>
       <span id="shop-badge" class="status-badge"></span>
       <p id="shop-note" class="note"></p>
+
+      <form id="shop-edit-form" class="form">
+        <h3>Shop details</h3>
+        <div class="form-grid">
+          <label>City <input id="edit-city"></label>
+          <label>Phone <input id="edit-phone" type="tel" required></label>
+        </div>
+        <label>Address <textarea id="edit-address" rows="2" required></textarea></label>
+        <p id="edit-msg" class="notice" hidden></p>
+        <button type="submit">Save details</button>
+      </form>
     </section>
 
     <section id="add-product" class="panel" hidden>
@@ -100,7 +115,7 @@
     </section>
   </main>
 
-  <footer class="site-footer">JewelHub project demo</footer>
+  <footer class="site-footer">Jewellery Wala project demo</footer>
   <script src="js/api.js"></script>
   <script src="js/dashboard.js"></script>
 </body>

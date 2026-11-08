@@ -216,3 +216,82 @@ button:disabled { background: #cfc6b8; cursor: not-allowed; }
 .list th { color: var(--muted); font-weight: 600; }
 
 .site-footer { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+/* Category chips */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chip {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+.chip:hover { background: #f3e6c8; }
+.chip.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+.stock-note { margin: 6px 0 0; font-size: 12px; color: var(--bad); font-weight: 600; }
+
+/* Buying and cart */
+.qty-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+.qty-row input, .cart-qty {
+  width: 80px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.total { font-size: 20px; font-weight: 700; color: var(--gold-dark); margin: 14px 0; }
+/* Tracking, delivery and OTP */
+.timeline {
+  list-style: none;
+  margin: 10px 0 14px;
+  padding: 0 0 0 16px;
+  border-left: 2px solid var(--line);
+}
+.timeline li { position: relative; padding: 4px 0 4px 12px; font-size: 14px; }
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -23px;
+  top: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+.timeline span { color: var(--muted); }
+
+.otp-box {
+  margin: 12px 0;
+  padding: 12px 16px;
+  background: #fff8e6;
+  border: 1px dashed var(--gold);
+  border-radius: 12px;
+}
+.otp-code { font-size: 32px; font-weight: 700; letter-spacing: 8px; color: var(--gold-dark); }
+
+.map-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.map-link {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #e8dfd0;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+}
+.map-link:hover { background: #f3e6c8; }
+
+.party { padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; margin: 10px 0; }
+.party h3 { margin: 0 0 6px; font-size: 15px; }
+
+.inline-form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 4px; }
+.inline-form select, .inline-form input {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+}

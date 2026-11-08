@@ -159,6 +159,13 @@ function renderShop(shop) {
   } else {
     note.textContent = 'Your shop is live. Customers can see your jewellery.';
   }
+  if (!shop.address || !shop.phone) {
+    note.textContent += ' Please add your shop address and phone below so delivery partners can pick up orders.';
+  }
+
+  document.getElementById('edit-city').value = shop.city || '';
+  document.getElementById('edit-phone').value = shop.phone || '';
+  document.getElementById('edit-address').value = shop.address || '';
 
   const approved = shop.status === 'approved';
   show('add-product', approved);
@@ -207,12 +214,35 @@ document.getElementById('shop-form').addEventListener('submit', async (e) => {
       body: {
         name: txt('shop-name'),
         city: txt('shop-city') || undefined,
+        address: txt('shop-address'),
+        phone: txt('shop-phone'),
         licence_no: txt('shop-licence') || undefined,
       },
     });
     await init();
   } catch (err) {
     if (!handleAuthError(err)) setNotice('shop-msg', err.message, false);
+  }
+});
+
+document.getElementById('shop-edit-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  setNotice('edit-msg', '');
+  try {
+    await apiFetch('/shops/mine', {
+      method: 'PATCH',
+      body: {
+        city: txt('edit-city'),
+        phone: txt('edit-phone'),
+        address: txt('edit-address'),
+      },
+    });
+    setNotice('edit-msg', 'Shop details saved.', true);
+    const shop = await apiFetch('/shops/mine');
+    renderShop(shop);
+    setNotice('edit-msg', 'Shop details saved.', true);
+  } catch (err) {
+    if (!handleAuthError(err)) setNotice('edit-msg', err.message, false);
   }
 });
 

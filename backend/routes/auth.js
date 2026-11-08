@@ -6,6 +6,12 @@ const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+function cleanPhone(raw) {
+  const text = String(raw || '').trim();
+  const digits = text.replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 15 ? text : null;
+}
+
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -16,8 +22,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
+    const phone = cleanPhone(req.body.phone);
+    if (!phone) {
+      return res.status(400).json({ error: 'A valid phone number (10 to 15 digits) is required' });
+    }
+
     const cleanEmail = email.trim().toLowerCase();
-    const safeRole = role === 'shop_owner' ? 'shop_owner' : 'customer';
+    // Admin kabhi register se nahi banta
+    const safeRole = ['shop_owner', 'delivery'].includes(role) ? role : 'customer';
 
     const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(cleanEmail);
     if (existing) {
@@ -26,8 +38,8 @@ router.post('/register', async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
     const result = db
-      .prepare('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)')
-      .run(name.trim(), cleanEmail, hash, safeRole);
+      .prepare('INSERT INTO users (name, email, password_hash, role, phone) VALUES (?, ?, ?, ?, ?)')
+      .run(name.trim(), cleanEmail, hash, safeRole, phone);
 
     res.status(201).json({
       message: 'Registered successfully',
@@ -63,7 +75,7 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, phone: user.phone },
     });
   } catch (err) {
     console.error(err);
@@ -73,7 +85,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/me', verifyToken, (req, res) => {
   const user = db
-    .prepare('SELECT id, name, email, role FROM users WHERE id = ?')
+    .prepare('SELECT id, name, email, role, phone FROM users WHERE id = ?')
     .get(req.user.id);
   res.json(user);
 });
