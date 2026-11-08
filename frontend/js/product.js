@@ -1,5 +1,3 @@
-
-
 const statusEl = document.getElementById('status');
 const detail = document.getElementById('detail');
 
@@ -19,6 +17,12 @@ function specRow(label, value) {
   const tr = document.createElement('tr');
   tr.append(el('td', null, label), el('td', null, String(value)));
   return tr;
+}
+
+function stockText(stock) {
+  if (stock <= 0) return 'Out of stock';
+  if (stock <= 3) return 'Only ' + stock + ' left';
+  return stock + ' in stock';
 }
 
 function meterBox(f) {
@@ -75,6 +79,7 @@ function render(p) {
     specRow('Stone', p.stone),
     specRow('Occasion', p.occasion),
     specRow('For', p.gender),
+    specRow('Availability', stockText(p.stock)),
   ];
   Object.entries(p.attributes || {}).forEach(([k, v]) => rows.push(specRow(k.replace(/_/g, ' '), v)));
   rows.filter(Boolean).forEach((r) => table.appendChild(r));
@@ -100,12 +105,12 @@ async function load() {
   }
 
   try {
-    const res = await fetch(API + '/products/' + encodeURIComponent(id));
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Request failed');
+    const data = await apiFetch('/products/' + encodeURIComponent(id));
     render(data);
   } catch (err) {
-    statusEl.textContent = 'Could not load this product: ' + err.message;
+    statusEl.textContent = err.message === 'Failed to fetch'
+      ? 'Could not reach the server. Is the backend running?'
+      : 'Could not load this product: ' + err.message;
   }
 }
 

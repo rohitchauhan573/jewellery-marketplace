@@ -10,7 +10,7 @@ function getMyShop(userId) {
 }
 
 const LIST_SQL = `
-  SELECT p.id, p.title, p.metal, p.purity, p.weight_g, p.making_charges, p.price,
+    SELECT p.id, p.title, p.metal, p.purity, p.weight_g, p.making_charges, p.price, p.stock,
          p.gender, p.occasion, p.stone, p.is_verified,
          c.name AS category, c.supports_try_on,
          s.id AS shop_id, s.name AS shop_name, s.city,

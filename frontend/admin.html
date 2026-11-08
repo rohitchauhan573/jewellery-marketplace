@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin - JewelHub</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">JewelHub</a>
+    <span class="tagline">Admin panel</span>
+    <nav id="nav" class="nav"></nav>
+  </header>
+
+  <main class="container">
+    <h1>Admin panel</h1>
+    <p id="status" class="status"></p>
+
+    <section class="panel">
+      <h2>Shops</h2>
+      <div class="filters">
+        <button type="button" data-tab="pending">Pending</button>
+        <button type="button" data-tab="approved" class="secondary">Approved</button>
+        <button type="button" data-tab="rejected" class="secondary">Rejected</button>
+      </div>
+      <div id="shop-list" class="table-wrap"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Today's gold rate (Rs per gram)</h2>
+      <p id="rate-current" class="note"></p>
+      <form id="rate-form" class="form">
+        <div class="form-grid">
+          <label>24K <input id="r24" type="number" min="1" step="1" required></label>
+          <label>22K <input id="r22" type="number" min="1" step="1" required></label>
+          <label>18K <input id="r18" type="number" min="1" step="1" required></label>
+        </div>
+        <p id="rate-msg" class="notice" hidden></p>
+        <button type="submit">Save rate</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Jewellery on the site <span id="product-count" class="note"></span></h2>
+      <p class="note">Mark an item Verified after you have checked its hallmark.</p>
+      <div id="product-list" class="table-wrap"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">JewelHub project demo</footer>
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

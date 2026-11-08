@@ -45,6 +45,27 @@ async function loadCategories() {
   });
 }
 
+async function editProduct(p) {
+  const priceInput = prompt('New selling price (Rs):', p.price);
+  if (priceInput === null) return;
+  const stockInput = prompt('Stock quantity:', p.stock);
+  if (stockInput === null) return;
+
+  const price = Number(priceInput);
+  const stock = Number(stockInput);
+  if (!(price > 0) || !Number.isInteger(stock) || stock < 0) {
+    alert('Price must be above 0 and stock must be a whole number (0 or more).');
+    return;
+  }
+
+  try {
+    await apiFetch('/products/' + p.id, { method: 'PUT', body: { price, stock } });
+    await loadProducts();
+  } catch (err) {
+    if (!handleAuthError(err)) alert(err.message);
+  }
+}
+
 async function loadProducts() {
   const rows = await apiFetch('/products/mine');
   const box = document.getElementById('product-list');
@@ -60,7 +81,7 @@ async function loadProducts() {
   table.className = 'list';
 
   const head = document.createElement('tr');
-  ['Title', 'Category', 'Purity', 'Weight', 'Price', 'Verified', ''].forEach((h) => {
+  ['Title', 'Category', 'Purity', 'Weight', 'Price', 'Stock', 'Verified', ''].forEach((h) => {
     const th = document.createElement('th');
     th.textContent = h;
     head.appendChild(th);
@@ -75,6 +96,7 @@ async function loadProducts() {
       p.purity || '-',
       p.weight_g ? p.weight_g + ' g' : '-',
       money(p.price),
+      p.stock === 0 ? '0 (hidden)' : p.stock,
       p.is_verified ? 'Yes' : 'No',
     ];
     cells.forEach((value) => {
@@ -88,6 +110,13 @@ async function loadProducts() {
     view.href = 'product.html?id=' + p.id;
     view.textContent = 'View';
     actions.appendChild(view);
+
+    const edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'secondary small';
+    edit.textContent = 'Edit';
+    edit.addEventListener('click', () => editProduct(p));
+    actions.appendChild(edit);
 
     const del = document.createElement('button');
     del.type = 'button';

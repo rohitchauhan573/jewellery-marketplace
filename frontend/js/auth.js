@@ -16,7 +16,15 @@ async function doLogin(email, password) {
 }
 
 function goAfterLogin(user) {
-  location.href = user.role === 'shop_owner' ? 'dashboard.html' : 'index.html';
+  if (user.role === 'admin') location.href = 'admin.html';
+  else if (user.role === 'shop_owner') location.href = 'dashboard.html';
+  else location.href = 'index.html';
+}
+
+function friendly(err) {
+  return err.message === 'Failed to fetch'
+    ? 'Could not reach the server. Is the backend running?'
+    : err.message;
 }
 
 if (loginForm) {
@@ -31,9 +39,7 @@ if (loginForm) {
       );
       goAfterLogin(user);
     } catch (err) {
-      setMsg(err.message === 'Failed to fetch'
-        ? 'Could not reach the server. Is the backend running?'
-        : err.message, false);
+      setMsg(friendly(err), false);
       submitBtn.disabled = false;
     }
   });
@@ -55,9 +61,7 @@ if (registerForm) {
       const user = await doLogin(email, password);
       goAfterLogin(user);
     } catch (err) {
-      setMsg(err.message === 'Failed to fetch'
-        ? 'Could not reach the server. Is the backend running?'
-        : err.message, false);
+      setMsg(friendly(err), false);
       submitBtn.disabled = false;
     }
   });

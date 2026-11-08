@@ -64,6 +64,7 @@ function renderNav() {
   }
 
   if (user.role === 'shop_owner') add('My shop', 'dashboard.html');
+  if (user.role === 'admin') add('Admin', 'admin.html');
 
   const who = document.createElement('span');
   who.className = 'nav-user';
