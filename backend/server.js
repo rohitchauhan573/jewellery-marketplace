@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const db = require('./config/db');
+const bootstrap = require('./bootstrap');
 const authRoutes = require('./routes/auth');
 const shopRoutes = require('./routes/shops');
 const adminRoutes = require('./routes/admin');
@@ -39,10 +40,15 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, (err) => {
-  if (err) {
-    console.error('Could not start server:', err.message);
-    process.exit(1);
-  }
-  console.log(`Server running on port ${PORT}`);
-});
+
+bootstrap()
+  .catch((err) => console.error('Bootstrap failed:', err.message))
+  .then(() => {
+    app.listen(PORT, (err) => {
+      if (err) {
+        console.error('Could not start server:', err.message);
+        process.exit(1);
+      }
+      console.log(`Server running on port ${PORT}`);
+    });
+  });

@@ -1,4 +1,6 @@
-const API = 'http://localhost:5000';
+const API = ['localhost', '127.0.0.1'].includes(location.hostname)
+  ? 'http://localhost:5000'
+  : 'https://YOUR-SERVICE.onrender.com';
 
 const Auth = {
   get token() {
