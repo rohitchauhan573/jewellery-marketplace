@@ -33,6 +33,59 @@ function handleAuthError(err) {
   return false;
 }
 
+// ---------- Photo ko chhota karke data bana dena ----------
+
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Could not read the photo'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImg(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('This file is not a valid image'));
+    img.src = src;
+  });
+}
+
+async function prepareImage(file, keepPng) {
+  if (!file) return null;
+  if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
+    throw new Error('Photos must be PNG, JPG or WEBP');
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error('That photo is too big. Choose one under 10 MB.');
+  }
+
+  const img = await loadImg(await readFile(file));
+  const usePng = keepPng || file.type === 'image/png';
+
+  for (const max of [700, 520, 380]) {
+    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * scale));
+    const h = Math.max(1, Math.round(img.naturalHeight * scale));
+
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const g = c.getContext('2d');
+    if (!usePng) {
+      g.fillStyle = '#ffffff';
+      g.fillRect(0, 0, w, h);
+    }
+    g.drawImage(img, 0, 0, w, h);
+
+    const out = usePng ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.85);
+    if (out.length <= 1400000) return out;
+  }
+  throw new Error('That photo is too detailed. Try a smaller or simpler photo.');
+}
+
 async function loadCategories() {
   const select = document.getElementById('p-category');
   if (select.options.length > 1) return;
@@ -81,7 +134,7 @@ async function loadProducts() {
   table.className = 'list';
 
   const head = document.createElement('tr');
-  ['Title', 'Category', 'Purity', 'Weight', 'Price', 'Stock', 'Verified', ''].forEach((h) => {
+  ['Title', 'Category', 'Purity', 'Weight', 'Price', 'Stock', 'Photo', 'Verified', ''].forEach((h) => {
     const th = document.createElement('th');
     th.textContent = h;
     head.appendChild(th);
@@ -97,6 +150,7 @@ async function loadProducts() {
       p.weight_g ? p.weight_g + ' g' : '-',
       money(p.price),
       p.stock === 0 ? '0 (hidden)' : p.stock,
+      p.has_image ? 'Yes' : 'No',
       p.is_verified ? 'Yes' : 'No',
     ];
     cells.forEach((value) => {
@@ -237,7 +291,6 @@ document.getElementById('shop-edit-form').addEventListener('submit', async (e) =
         address: txt('edit-address'),
       },
     });
-    setNotice('edit-msg', 'Shop details saved.', true);
     const shop = await apiFetch('/shops/mine');
     renderShop(shop);
     setNotice('edit-msg', 'Shop details saved.', true);
@@ -250,39 +303,49 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
   e.preventDefault();
   setNotice('product-msg', '');
 
-  const image = txt('p-image');
-  if (image && !/^https?:\/\//i.test(image)) {
-    setNotice('product-msg', 'Photo link must start with http:// or https://', false);
-    return;
-  }
-
-  const size = txt('p-size');
-  const body = {
-    title: txt('p-title'),
-    category_id: Number(document.getElementById('p-category').value),
-    metal: txt('p-metal') || undefined,
-    purity: txt('p-purity') || undefined,
-    weight_g: num('p-weight'),
-    making_charges: num('p-making'),
-    price: num('p-price'),
-    stock: num('p-stock'),
-    gender: txt('p-gender') || undefined,
-    occasion: txt('p-occasion') || undefined,
-    stone: txt('p-stone') || undefined,
-    description: txt('p-desc') || undefined,
-    attributes: size ? { size_or_length: size } : {},
-    images: image ? [image] : [],
-  };
-
   const btn = document.getElementById('product-submit');
   btn.disabled = true;
+
   try {
+    const link = txt('p-image');
+    if (link && !/^https?:\/\//i.test(link)) {
+      throw new Error('Photo link must start with http:// or https://');
+    }
+
+    const photoFile = document.getElementById('p-photo-file').files[0];
+    const tryOnFile = document.getElementById('p-tryon-file').files[0];
+    const photo = await prepareImage(photoFile, false);
+    const tryOn = await prepareImage(tryOnFile, true);
+
+    const size = txt('p-size');
+    const body = {
+      title: txt('p-title'),
+      category_id: Number(document.getElementById('p-category').value),
+      metal: txt('p-metal') || undefined,
+      purity: txt('p-purity') || undefined,
+      weight_g: num('p-weight'),
+      making_charges: num('p-making'),
+      price: num('p-price'),
+      stock: num('p-stock'),
+      gender: txt('p-gender') || undefined,
+      occasion: txt('p-occasion') || undefined,
+      stone: txt('p-stone') || undefined,
+      description: txt('p-desc') || undefined,
+      attributes: size ? { size_or_length: size } : {},
+      images: photo ? [photo] : link ? [link] : [],
+      try_on_png: tryOn || undefined,
+    };
+
     await apiFetch('/products', { method: 'POST', body });
     document.getElementById('product-form').reset();
     setNotice('product-msg', 'Jewellery added. It is now visible on the home page.', true);
     await loadProducts();
   } catch (err) {
-    if (!handleAuthError(err)) setNotice('product-msg', err.message, false);
+    if (!handleAuthError(err)) {
+      setNotice('product-msg', err.message === 'Failed to fetch'
+        ? 'Could not reach the server. Is the backend running?'
+        : err.message, false);
+    }
   } finally {
     btn.disabled = false;
   }

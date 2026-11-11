@@ -47,9 +47,9 @@ function meterBox(f) {
   return box;
 }
 
-function orderBox(p) {
+function buyBox(p) {
   const box = el('div', 'meter');
-  box.appendChild(el('h3', null, 'Order this item'));
+  box.appendChild(el('h3', null, 'Buy this item'));
 
   if (p.stock <= 0) {
     box.appendChild(el('p', null, 'This item is out of stock.'));
@@ -61,77 +61,75 @@ function orderBox(p) {
     const para = el('p', null, 'Please ');
     const link = el('a', null, 'login');
     link.href = 'login.html';
-    para.append(link, ' as a customer to order this item.');
+    para.append(link, ' as a customer to buy this item.');
     box.appendChild(para);
     return box;
   }
   if (user.role !== 'customer') {
-    box.appendChild(el('p', null, 'Only customer accounts can place orders.'));
+    box.appendChild(el('p', null, 'Only customer accounts can buy jewellery.'));
     return box;
   }
 
-  const form = el('form', 'form');
-
-  const qtyLabel = el('label', null, 'Quantity');
+  const qtyLabel = el('label', 'qty-row', 'Quantity ');
   const qty = document.createElement('input');
   qty.type = 'number';
   qty.min = '1';
   qty.max = String(p.stock);
   qty.value = '1';
-  qty.required = true;
   qtyLabel.appendChild(qty);
-
-  const addrLabel = el('label', null, 'Delivery address');
-  const addr = document.createElement('textarea');
-  addr.rows = 3;
-  addr.required = true;
-  addrLabel.appendChild(addr);
+  box.appendChild(qtyLabel);
 
   const msg = el('p', 'notice');
   msg.hidden = true;
 
-  const btn = el('button', null, 'Place order (cash on delivery)');
-  btn.type = 'submit';
+  function quantity() {
+    const n = Math.floor(Number(qty.value));
+    return n >= 1 ? Math.min(n, p.stock) : 1;
+  }
 
-  form.append(qtyLabel, addrLabel, msg, btn);
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    msg.hidden = true;
-    btn.disabled = true;
-    try {
-      await apiFetch('/orders', {
-        method: 'POST',
-        body: {
-          items: [{ product_id: p.id, quantity: Number(qty.value) }],
-          address: addr.value.trim(),
-        },
-      });
-      msg.className = 'notice ok';
-      msg.textContent = 'Order placed! You can track it in My orders.';
-      msg.hidden = false;
-      setTimeout(() => location.reload(), 1500);
-    } catch (err) {
-      if (err.status === 401) {
-        Auth.clear();
-        location.href = 'login.html';
-        return;
-      }
+  function addToCart() {
+    const result = Cart.add(p, quantity());
+    if (!result.ok) {
       msg.className = 'notice error';
-      msg.textContent = err.message === 'Failed to fetch'
-        ? 'Could not reach the server. Is the backend running?'
-        : err.message;
+      msg.textContent = result.message;
       msg.hidden = false;
-      btn.disabled = false;
+      return false;
+    }
+    renderNav();
+    return true;
+  }
+
+  const actions = el('div', 'actions');
+
+  const addBtn = el('button', 'secondary', 'Add to cart');
+  addBtn.type = 'button';
+  addBtn.addEventListener('click', () => {
+    if (addToCart()) {
+      msg.className = 'notice ok';
+      msg.textContent = 'Added to cart.';
+      msg.hidden = false;
     }
   });
 
-  box.appendChild(form);
+  const buyBtn = el('button', null, 'Buy now');
+  buyBtn.type = 'button';
+  buyBtn.addEventListener('click', () => {
+    if (addToCart()) location.href = 'cart.html';
+  });
+
+  actions.append(addBtn, buyBtn);
+  box.append(actions, msg);
   return box;
 }
 
 function render(p) {
   document.title = p.title + ' - Jewellery Wala';
+
+  const back = document.querySelector('.back');
+  if (back && p.category_id) {
+    back.href = 'index.html?category=' + p.category_id;
+    back.textContent = '\u2190 Back to ' + p.category;
+  }
 
   const left = el('div');
   const thumb = el('div', 'thumb');
@@ -171,12 +169,15 @@ function render(p) {
   if (p.description) right.appendChild(el('p', null, p.description));
 
   right.appendChild(meterBox(p.fair_price));
-  right.appendChild(orderBox(p));
+  right.appendChild(buyBox(p));
 
-  const tryOn = el('button', null, p.supports_try_on ? 'Virtual try-on (coming soon)' : 'Try-on not available');
-  tryOn.disabled = true;
-  tryOn.style.marginTop = '16px';
-  right.appendChild(tryOn);
+  if (p.supports_try_on) {
+    const tryOn = el('a', 'tryon-btn', 'Virtual try-on');
+    tryOn.href = 'tryon.html?id=' + p.id;
+    right.appendChild(tryOn);
+  } else {
+    right.appendChild(el('p', 'note', 'Virtual try-on is not available for this type of jewellery.'));
+  }
 
   detail.append(left, right);
 }

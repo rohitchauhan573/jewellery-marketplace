@@ -101,7 +101,18 @@
           <label>Stone (optional) <input id="p-stone" placeholder="diamond, ruby..."></label>
           <label>Size / length (optional) <input id="p-size" placeholder="ring size, chain length..."></label>
         </div>
-        <label>Photo link (optional, starts with https://) <input id="p-image" type="url"></label>
+
+        <label>Product photo from your device
+          <input id="p-photo-file" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+        <label>or photo link (optional, starts with https://)
+          <input id="p-image" type="url">
+        </label>
+        <label>Try-on image (optional, transparent PNG from your device)
+          <input id="p-tryon-file" type="file" accept="image/png">
+        </label>
+        <p class="note">Virtual try-on works for Earrings, Necklaces, Chains, Pendants, Nose Pins and Maang Tikka. Customers see this exact photo on their face, so use a clear photo of the piece on a plain white background. For earrings, one pair side by side is fine.</p>
+
         <label>Description (optional) <textarea id="p-desc" rows="3"></textarea></label>
         <p class="note">The fair-price meter works for gold items with 24K, 22K or 18K purity and a weight.</p>
         <p id="product-msg" class="notice" hidden></p>

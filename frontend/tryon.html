@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Virtual try-on - Jewellery Wala</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">Jewellery Wala</a>
+    <span class="tagline">Jewellery from trusted local shops</span>
+    <nav id="nav" class="nav"></nav>
+  </header>
+
+  <main class="container narrow">
+    <a id="back" class="back" href="index.html">&larr; Back</a>
+    <h1 id="title">Virtual try-on</h1>
+    <p id="subtitle" class="note"></p>
+    <p id="status" class="status"></p>
+
+    <div class="tryon-stage">
+      <div id="placeholder" class="tryon-placeholder">Press "Start camera" to try this on.</div>
+      <video id="video" playsinline muted hidden></video>
+      <canvas id="overlay"></canvas>
+    </div>
+
+    <p id="hint" class="note" hidden></p>
+
+    <div class="actions">
+      <button id="start" type="button">Start camera</button>
+      <button id="snap" type="button" class="secondary" disabled>Take photo</button>
+      <a id="view" class="map-link" href="index.html">View product</a>
+    </div>
+
+    <p class="note">Tips: face the camera, keep your face in the centre, use good light, and tuck hair behind your ears for earrings. This is a preview, so the fit is approximate.</p>
+  </main>
+
+  <footer class="site-footer">Jewellery Wala project demo</footer>
+  <script src="js/api.js"></script>
+  <script type="module" src="js/tryon.js"></script>
+</body>
+</html>

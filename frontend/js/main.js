@@ -18,10 +18,12 @@ function card(p) {
 
   const thumb = document.createElement('div');
   thumb.className = 'thumb';
-  if (p.image) {
+  const photo = p.image || (p.has_image ? API + '/products/' + p.id + '/image' : null);
+  if (photo) {
     const img = document.createElement('img');
-    img.src = p.image;
+    img.src = photo;
     img.alt = p.title;
+    img.loading = 'lazy';
     thumb.appendChild(img);
   } else {
     thumb.textContent = '\uD83D\uDC8E';
