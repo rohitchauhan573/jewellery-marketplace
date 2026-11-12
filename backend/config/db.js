@@ -68,6 +68,9 @@ addColumn('orders', 'contact_phone', 'TEXT');
 addColumn('orders', 'delivery_partner_id', 'INTEGER');
 addColumn('orders', 'delivery_otp', 'TEXT');
 addColumn('orders', 'otp_attempts', 'INTEGER DEFAULT 0');
+addColumn('orders', 'payment_method', "TEXT DEFAULT 'cod'");
+addColumn('orders', 'amount_paid', 'REAL DEFAULT 0');
+addColumn('orders', 'payment_ref', 'TEXT');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS order_events (

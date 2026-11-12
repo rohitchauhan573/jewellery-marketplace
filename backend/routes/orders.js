@@ -6,6 +6,13 @@ const { verifyToken, requireRole } = require('../middleware/auth');
 const router = express.Router();
 
 const MAX_OTP_TRIES = 5;
+const ADVANCE_OPTIONS = [10, 25, 50];
+
+// SQL ka tukda: payment ki jaankari (purane orders ke liye bhi chalta hai)
+const PAY_COLS = `COALESCE(o.payment_method, 'cod') AS payment_method,
+  COALESCE(o.amount_paid, 0) AS amount_paid,
+  o.payment_ref,
+  (o.total - COALESCE(o.amount_paid, 0)) AS amount_due`;
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -48,6 +55,12 @@ function getMyShop(userId) {
 
 function addEvent(orderId, label) {
   db.prepare('INSERT INTO order_events (order_id, label) VALUES (?, ?)').run(orderId, label);
+}
+
+// Cancel hone par agar paisa diya tha to refund ka note
+function cancelLabel(order, who) {
+  const paid = Number(order.amount_paid) || 0;
+  return paid > 0 ? `${who}. Refund of Rs ${paid} will be returned (demo)` : who;
 }
 
 function loadEvents(order) {
@@ -94,6 +107,7 @@ function staffList(where, params) {
   const orders = db
     .prepare(
       `SELECT o.id, o.total, o.status, o.address, o.contact_phone, o.created_at,
+              ${PAY_COLS},
               u.name AS customer_name, u.email AS customer_email,
               o.delivery_partner_id, d.name AS partner_name, d.phone AS partner_phone
        FROM orders o
@@ -112,7 +126,7 @@ function staffList(where, params) {
 
 // ---------- Customer ----------
 
-// Order place karna (stock apne aap kam hota hai)
+// Order place karna (stock apne aap kam hota hai, payment demo hai)
 router.post('/', verifyToken, requireRole('customer'), (req, res) => {
   try {
     const { items, address } = req.body;
@@ -126,6 +140,14 @@ router.post('/', verifyToken, requireRole('customer'), (req, res) => {
     }
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'No items in the order' });
+    }
+
+    const method = ['cod', 'advance', 'online'].includes(req.body.payment_method)
+      ? req.body.payment_method
+      : 'cod';
+    const percent = Number(req.body.advance_percent);
+    if (method === 'advance' && !ADVANCE_OPTIONS.includes(percent)) {
+      return res.status(400).json({ error: 'Choose an advance of 10%, 25% or 50%' });
     }
 
     const result = transaction(() => {
@@ -165,21 +187,32 @@ router.post('/', verifyToken, requireRole('customer'), (req, res) => {
         lines.push({ productId, shopId: product.shop_id, qty, price: product.price });
       }
 
+      // Demo payment: koi asli paisa nahi katta
+      let paid = 0;
+      if (method === 'online') paid = Math.round(total);
+      if (method === 'advance') paid = Math.round((total * percent) / 100);
+      const ref = paid > 0 ? 'DEMO-' + crypto.randomBytes(4).toString('hex').toUpperCase() : null;
+
       const order = db
         .prepare(
-          `INSERT INTO orders (user_id, total, status, address, contact_phone, delivery_otp)
-           VALUES (?, ?, 'pending', ?, ?, ?)`
+          `INSERT INTO orders
+             (user_id, total, status, address, contact_phone, delivery_otp, payment_method, amount_paid, payment_ref)
+           VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?)`
         )
-        .run(req.user.id, total, String(address).trim(), phone, newOtp());
+        .run(req.user.id, total, String(address).trim(), phone, newOtp(), method, paid, ref);
       const orderId = Number(order.lastInsertRowid);
 
       const insertItem = db.prepare(
         'INSERT INTO order_items (order_id, product_id, shop_id, quantity, price) VALUES (?, ?, ?, ?, ?)'
       );
       lines.forEach((l) => insertItem.run(orderId, l.productId, l.shopId, l.qty, l.price));
-      addEvent(orderId, 'Placed');
 
-      return { orderId, total };
+      addEvent(orderId, 'Placed');
+      if (paid > 0) {
+        addEvent(orderId, (method === 'online' ? 'Paid online (demo): Rs ' : 'Advance paid (demo): Rs ') + paid);
+      }
+
+      return { orderId, total, amount_paid: paid, amount_due: total - paid };
     });
 
     res.status(201).json({ message: 'Order placed', ...result });
@@ -193,6 +226,7 @@ router.get('/mine', verifyToken, requireRole('customer'), (req, res) => {
   const orders = db
     .prepare(
       `SELECT o.id, o.total, o.status, o.address, o.contact_phone, o.created_at,
+              ${PAY_COLS},
               d.name AS partner_name, d.phone AS partner_phone,
               CASE WHEN o.status IN ('delivered', 'cancelled') THEN NULL ELSE o.delivery_otp END AS delivery_otp
        FROM orders o
@@ -222,13 +256,45 @@ router.patch('/:id/cancel', verifyToken, requireRole('customer'), (req, res) => 
     transaction(() => {
       db.prepare("UPDATE orders SET status = 'cancelled' WHERE id = ?").run(order.id);
       restock(order.id);
-      addEvent(order.id, 'Cancelled by customer');
+      addEvent(order.id, cancelLabel(order, 'Cancelled by customer'));
     });
 
     res.json({ message: 'Order cancelled' });
   } catch (err) {
     sendError(res, err);
   }
+});
+
+// ---------- Invoice (customer, uski shop ka owner, ya admin) ----------
+
+router.get('/:id/invoice', verifyToken, (req, res) => {
+  const order = db
+    .prepare(
+      `SELECT o.id, o.user_id, o.total, o.status, o.address, o.contact_phone, o.created_at,
+              ${PAY_COLS},
+              u.name AS customer_name, u.email AS customer_email
+       FROM orders o JOIN users u ON u.id = o.user_id
+       WHERE o.id = ?`
+    )
+    .get(req.params.id);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+
+  let allowed = false;
+  if (req.user.role === 'admin') allowed = true;
+  else if (req.user.role === 'customer') allowed = order.user_id === req.user.id;
+  else if (req.user.role === 'shop_owner') allowed = !!staffOrder(req, order.id);
+  if (!allowed) return res.status(404).json({ error: 'Order not found' });
+
+  const shop = db
+    .prepare(
+      `SELECT s.name, s.address, s.phone, s.city
+       FROM order_items oi JOIN shops s ON s.id = oi.shop_id
+       WHERE oi.order_id = ? LIMIT 1`
+    )
+    .get(order.id);
+
+  const { user_id, ...safeOrder } = order;
+  res.json({ order: safeOrder, shop: shop || null, items: loadItems(order.id) });
 });
 
 // ---------- Shop owner aur Admin ----------
@@ -285,7 +351,7 @@ router.patch('/:id/status', verifyToken, requireRole('shop_owner', 'admin'), (re
         }
         db.prepare("UPDATE orders SET status = 'cancelled' WHERE id = ?").run(order.id);
         restock(order.id);
-        addEvent(order.id, 'Cancelled by shop');
+        addEvent(order.id, cancelLabel(order, 'Cancelled by shop'));
       }
     });
 
@@ -328,7 +394,7 @@ router.get('/delivery', verifyToken, requireRole('delivery'), (req, res) => {
   const orders = db
     .prepare(
       `SELECT o.id, o.total, o.status, o.address AS drop_address, o.contact_phone AS customer_phone,
-              o.created_at, u.name AS customer_name
+              o.created_at, ${PAY_COLS}, u.name AS customer_name
        FROM orders o
        JOIN users u ON u.id = o.user_id
        WHERE o.delivery_partner_id = ? AND o.status != 'cancelled'
@@ -400,9 +466,11 @@ router.patch('/:id/delivery', verifyToken, requireRole('delivery'), (req, res) =
         });
       }
 
+      const due = order.total - (Number(order.amount_paid) || 0);
       transaction(() => {
         db.prepare("UPDATE orders SET status = 'delivered' WHERE id = ?").run(order.id);
         addEvent(order.id, 'Delivered');
+        if (due > 0) addEvent(order.id, 'Cash collected: Rs ' + due);
       });
       return res.json({ message: 'Delivered. Thank you!' });
     }

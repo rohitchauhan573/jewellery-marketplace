@@ -95,7 +95,17 @@ function orderPanel(o) {
   title.appendChild(badge);
   panel.appendChild(title);
 
-  panel.appendChild(noteLine(fmtTime(o.created_at) + ' \u00B7 Total ' + money(o.total) + ' \u00B7 Cash on delivery'));
+    const payText = o.payment_method === 'online'
+    ? 'Paid online (demo)'
+    : o.payment_method === 'advance'
+      ? 'Advance paid ' + money(o.amount_paid) + ', balance ' + money(o.amount_due) + ' on delivery'
+      : 'Cash on delivery';
+  panel.appendChild(noteLine(fmtTime(o.created_at) + ' \u00B7 Total ' + money(o.total) + ' \u00B7 ' + payText));
+  const invoiceLink = document.createElement('a');
+  invoiceLink.className = 'map-link';
+  invoiceLink.href = 'invoice.html?id=' + o.id;
+  invoiceLink.textContent = 'View invoice';
+  panel.appendChild(invoiceLink);
 
   const customer = document.createElement('p');
   customer.className = 'note';

@@ -65,8 +65,10 @@ function orderPanel(o) {
   title.appendChild(badge);
   panel.appendChild(title);
 
-  panel.appendChild(line(o.items.map((i) => i.quantity + ' x ' + i.title).join(', ') + ' \u00B7 Collect ' + money(o.total) + ' (cash on delivery)'));
-
+  const dueText = o.amount_due > 0
+    ? 'Collect ' + money(o.amount_due) + ' cash on delivery'
+    : 'Already paid online. Collect nothing';
+  panel.appendChild(line(o.items.map((i) => i.quantity + ' x ' + i.title).join(', ') + ' \u00B7 ' + dueText));
   const shopAddr = o.shop && o.shop.address ? o.shop.address : '';
   const shopBox = block('Pick up from');
   if (o.shop) {

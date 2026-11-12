@@ -3,6 +3,9 @@ const listBox = document.getElementById('cart-list');
 const panel = document.getElementById('cart-panel');
 const checkout = document.getElementById('checkout');
 const msg = document.getElementById('msg');
+const placeBtn = document.getElementById('place');
+const paySummary = document.getElementById('pay-summary');
+const pctSelect = document.getElementById('advance-pct');
 
 function money(n) {
   return '\u20B9' + Number(n).toLocaleString('en-IN');
@@ -12,6 +15,34 @@ function setMsg(text, ok) {
   msg.textContent = text || '';
   msg.className = 'notice ' + (ok ? 'ok' : 'error');
   msg.hidden = !text;
+}
+
+function cartTotal() {
+  return Cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+}
+
+function method() {
+  const chosen = document.querySelector('input[name="pay"]:checked');
+  return chosen ? chosen.value : 'cod';
+}
+
+function updatePay() {
+  const total = cartTotal();
+  const m = method();
+  pctSelect.disabled = m !== 'advance';
+
+  if (m === 'advance') {
+    const pct = Number(pctSelect.value);
+    const now = Math.round((total * pct) / 100);
+    paySummary.textContent = 'Pay ' + money(now) + ' now (demo) and ' + money(total - now) + ' on delivery.';
+    placeBtn.textContent = 'Place order and pay ' + money(now) + ' (demo)';
+  } else if (m === 'online') {
+    paySummary.textContent = 'Pay ' + money(total) + ' now (demo). Nothing to pay on delivery.';
+    placeBtn.textContent = 'Place order and pay ' + money(total) + ' (demo)';
+  } else {
+    paySummary.textContent = 'Pay ' + money(total) + ' in cash when you receive the order.';
+    placeBtn.textContent = 'Place order';
+  }
 }
 
 function render() {
@@ -40,9 +71,7 @@ function render() {
   });
   table.appendChild(head);
 
-  let total = 0;
   items.forEach((i) => {
-    total += i.price * i.quantity;
     const tr = document.createElement('tr');
 
     const title = document.createElement('td');
@@ -90,7 +119,8 @@ function render() {
   });
 
   listBox.appendChild(table);
-  document.getElementById('total').textContent = money(total);
+  document.getElementById('total').textContent = money(cartTotal());
+  updatePay();
 }
 
 document.getElementById('clear').addEventListener('click', () => {
@@ -99,6 +129,9 @@ document.getElementById('clear').addEventListener('click', () => {
   render();
 });
 
+document.querySelectorAll('input[name="pay"]').forEach((r) => r.addEventListener('change', updatePay));
+pctSelect.addEventListener('change', updatePay);
+
 document.getElementById('checkout-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   setMsg('');
@@ -106,19 +139,20 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
   const items = Cart.items;
   if (!items.length) return;
 
-  const btn = document.getElementById('place');
-  btn.disabled = true;
+  placeBtn.disabled = true;
   try {
-    await apiFetch('/orders', {
+    const result = await apiFetch('/orders', {
       method: 'POST',
       body: {
         items: items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
         address: document.getElementById('address').value.trim(),
         phone: document.getElementById('phone').value.trim(),
+        payment_method: method(),
+        advance_percent: Number(pctSelect.value),
       },
     });
     Cart.clear();
-    location.href = 'orders.html';
+    location.href = 'invoice.html?id=' + result.orderId + '&new=1';
   } catch (err) {
     if (err.status === 401) {
       Auth.clear();
@@ -128,7 +162,7 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
     setMsg(err.message === 'Failed to fetch'
       ? 'Could not reach the server. Is the backend running?'
       : err.message, false);
-    btn.disabled = false;
+    placeBtn.disabled = false;
   }
 });
 

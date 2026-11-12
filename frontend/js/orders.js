@@ -27,6 +27,14 @@ function noteLine(text) {
   return p;
 }
 
+function payText(o) {
+  if (o.payment_method === 'online') return 'Paid online (demo)';
+  if (o.payment_method === 'advance') {
+    return 'Advance paid ' + money(o.amount_paid) + ' (demo), balance ' + money(o.amount_due) + ' on delivery';
+  }
+  return 'Cash on delivery';
+}
+
 function orderPanel(o) {
   const panel = document.createElement('section');
   panel.className = 'panel';
@@ -39,7 +47,7 @@ function orderPanel(o) {
   title.appendChild(badge);
   panel.appendChild(title);
 
-  panel.appendChild(noteLine(fmtTime(o.created_at) + ' \u00B7 Total ' + money(o.total) + ' \u00B7 Cash on delivery'));
+  panel.appendChild(noteLine(fmtTime(o.created_at) + ' \u00B7 Total ' + money(o.total) + ' \u00B7 ' + payText(o)));
 
   const table = document.createElement('table');
   table.className = 'list';
@@ -92,6 +100,12 @@ function orderPanel(o) {
   const trackTitle = document.createElement('h3');
   trackTitle.textContent = 'Tracking';
   panel.append(trackTitle, timelineEl(o.events));
+
+  const invoice = document.createElement('a');
+  invoice.className = 'map-link';
+  invoice.href = 'invoice.html?id=' + o.id;
+  invoice.textContent = 'View invoice';
+  panel.appendChild(invoice);
 
   if (o.status === 'pending') {
     const cancel = document.createElement('button');

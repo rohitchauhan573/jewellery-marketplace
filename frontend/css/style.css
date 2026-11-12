@@ -295,3 +295,28 @@ button:disabled { background: #cfc6b8; cursor: not-allowed; }
   font-size: 14px;
   background: #fff;
 }
+/* Payment and invoice */
+.pay-box { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 0; }
+.pay-box legend { padding: 0 6px; color: var(--muted); font-size: 14px; }
+.form .radio {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 0;
+  color: var(--text);
+}
+.form .radio select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; }
+.demo-note { color: var(--bad); }
+
+.invoice h1 { margin: 0 0 4px; }
+.invoice .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+@media (max-width: 600px) { .invoice .parties { grid-template-columns: 1fr; } }
+.invoice .sum { margin: 14px 0 8px auto; min-width: 260px; }
+.invoice .sum td { padding: 4px 0; }
+
+@media print {
+  .site-header, .site-footer, .no-print, .nav { display: none !important; }
+  body { background: #fff; }
+  .panel { border: 0; padding: 0; }
+}

@@ -32,7 +32,31 @@
         <label>Delivery address
           <textarea id="address" rows="3" required></textarea>
         </label>
-        <p class="note">Payment: cash on delivery. After you order, you get a 4-digit delivery code. Share it only when you receive your jewellery.</p>
+
+        <fieldset class="pay-box">
+          <legend>Payment</legend>
+          <label class="radio">
+            <input type="radio" name="pay" value="cod" checked>
+            Cash on delivery (pay everything when you receive it)
+          </label>
+          <label class="radio">
+            <input type="radio" name="pay" value="advance">
+            Pay an advance now, rest on delivery
+            <select id="advance-pct">
+              <option value="10">10%</option>
+              <option value="25" selected>25%</option>
+              <option value="50">50%</option>
+            </select>
+          </label>
+          <label class="radio">
+            <input type="radio" name="pay" value="online">
+            Pay the full amount now
+          </label>
+          <p id="pay-summary" class="note"></p>
+          <p class="note demo-note">Demo payment: no real money is charged and no card or UPI details are needed.</p>
+        </fieldset>
+
+        <p class="note">After you order, you get a 4-digit delivery code. Share it only when you receive your jewellery.</p>
         <p id="msg" class="notice" hidden></p>
         <button id="place" type="submit">Place order</button>
       </form>
