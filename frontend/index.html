@@ -13,12 +13,27 @@
     <nav id="nav" class="nav"></nav>
   </header>
 
-  <main class="container">
-    <h1 id="page-title">All jewellery</h1>
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <h1>Buy from local jewellers. Know the price is fair.</h1>
+        <p>Every price is checked against today's gold rate. Try earrings and necklaces on with your camera before you buy.</p>
+        <a class="hero-cta" href="#shop">Browse jewellery</a>
+      </div>
+      <aside class="rate-board" aria-label="Today's gold rate">
+        <h2>Today's gold rate</h2>
+        <div id="rate-rows">Loading the rate...</div>
+        <p id="rate-date" class="rate-date"></p>
+      </aside>
+    </div>
+  </section>
+
+  <main class="container" id="shop">
+    <h2 id="page-title">All jewellery</h2>
     <section id="chips" class="chips"></section>
 
     <section class="filters">
-      <input id="q" type="search" placeholder="Search jewellery...">
+      <input id="q" type="search" placeholder="Search jewellery">
       <select id="category"><option value="">All categories</option></select>
       <select id="purity">
         <option value="">Any purity</option>

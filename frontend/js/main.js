@@ -156,3 +156,28 @@ document.getElementById('q').addEventListener('keydown', (e) => {
 categorySelect.addEventListener('change', loadProducts);
 
 loadCategories().then(loadProducts);
+// Gold rate board (home page ke hero mein)
+async function loadRateBoard() {
+  const rows = document.getElementById('rate-rows');
+  const dateEl = document.getElementById('rate-date');
+  if (!rows) return;
+  try {
+    const r = await apiFetch('/gold-rate');
+    rows.replaceChildren();
+    [['24K', r.rate_24k], ['22K', r.rate_22k], ['18K', r.rate_18k]].forEach(([label, value]) => {
+      const row = document.createElement('div');
+      row.className = 'rate-row';
+      const name = document.createElement('span');
+      name.textContent = label + ' gold';
+      const amount = document.createElement('strong');
+      amount.textContent = money(value);
+      row.append(name, amount);
+      rows.appendChild(row);
+    });
+    dateEl.textContent = 'Per gram, updated ' + r.rate_date;
+  } catch (err) {
+    rows.textContent = 'The gold rate has not been set yet.';
+  }
+}
+
+loadRateBoard();
