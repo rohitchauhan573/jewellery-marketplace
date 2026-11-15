@@ -166,3 +166,22 @@
       </div>
       <div>
         <h3>Browse</h3>
+          <script>
+    window.addEventListener('error', function (e) {
+      var s = document.getElementById('status');
+      if (s) s.textContent = 'Page error: ' + e.message + ' (' + String(e.filename || '').split('/').pop() + ' line ' + e.lineno + ')';
+    });
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        var s = document.getElementById('status');
+        var c = document.getElementById('category');
+        if (s && c && c.options.length < 2 && !s.textContent) {
+          s.textContent = 'main.js did not run. Check that frontend/js/main.js is saved and loaded.';
+        }
+      }, 3000);
+    });
+  </script>
+  <script src="js/api.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
+</body>
+</html>cd "C:\jewellery wala"

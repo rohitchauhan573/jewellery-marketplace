@@ -141,21 +141,12 @@ async function loadProducts() {
       : 'No jewellery found. Try changing the filters.';
     rows.forEach((p) => grid.appendChild(card(p)));
   } catch (err) {
-    statusEl.textContent = 'Could not load products: ' + err.message;
+    statusEl.textContent = err.message === 'Failed to fetch'
+      ? 'Could not reach the server. Is the backend running?'
+      : 'Could not load products: ' + err.message;
   }
 }
 
-document.getElementById('apply').addEventListener('click', loadProducts);
-document.getElementById('reset').addEventListener('click', () => {
-  FIELDS.forEach((id) => { document.getElementById(id).value = ''; });
-  loadProducts();
-});
-document.getElementById('q').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') loadProducts();
-});
-categorySelect.addEventListener('change', loadProducts);
-
-loadCategories().then(loadProducts);
 // Gold rate board (home page ke hero mein)
 async function loadRateBoard() {
   const rows = document.getElementById('rate-rows');
@@ -180,4 +171,15 @@ async function loadRateBoard() {
   }
 }
 
+document.getElementById('apply').addEventListener('click', loadProducts);
+document.getElementById('reset').addEventListener('click', () => {
+  FIELDS.forEach((id) => { document.getElementById(id).value = ''; });
+  loadProducts();
+});
+document.getElementById('q').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') loadProducts();
+});
+categorySelect.addEventListener('change', loadProducts);
+
 loadRateBoard();
+loadCategories().then(loadProducts);
