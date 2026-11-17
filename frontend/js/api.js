@@ -193,3 +193,21 @@ function renderNav() {
 }
 
 renderNav();
+// Logo: header ke naam ke paas aur browser tab mein
+(function addLogo() {
+  const icon = document.createElement('link');
+  icon.rel = 'icon';
+  icon.type = 'image/svg+xml';
+  icon.href = 'images/logo.svg';
+  document.head.appendChild(icon);
+
+  document.querySelectorAll('.brand').forEach((brand) => {
+    if (brand.querySelector('img')) return;
+    const img = document.createElement('img');
+    img.src = 'images/logo.svg';
+    img.alt = '';
+    img.width = 36;
+    img.height = 36;
+    brand.prepend(img);
+  });
+})();

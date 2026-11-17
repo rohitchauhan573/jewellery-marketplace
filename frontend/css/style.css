@@ -441,3 +441,25 @@ button:disabled, button:disabled:hover { background: #c9d2d0; border-color: #c9d
 @media (max-width: 480px) {
   .footer-grid { grid-template-columns: 1fr; }
 }
+.rate-board .rate-date.rate-stale { color: #f0c36b; }
+/* Sort, shop page and admin numbers */
+.check { display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; font-size: 14px; color: var(--text); }
+.shop-head h1 { margin: 0 0 6px; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0 0 20px; }
+.stat { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.stat strong { display: block; font-family: var(--display); font-weight: 400; font-size: 28px; color: var(--peacock); font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 14px; }
+.stat-wide { grid-column: span 2; }
+.stat-wide p { margin: 4px 0 0; font-size: 14px; }
+/* Logo and shop report */
+.brand { display: inline-flex; align-items: center; gap: 10px; }
+.brand img { display: block; border-radius: 8px; }
+.total-row td { font-weight: 600; border-top: 2px solid var(--line); }
+.report-note { margin: 0 0 12px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0 0 20px; }
+.stat { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.stat strong { display: block; font-family: var(--display); font-weight: 400; font-size: 28px; color: var(--peacock); font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 14px; }
+.stat-wide { grid-column: span 2; }
+.stat-wide p { margin: 4px 0 0; font-size: 14px; }

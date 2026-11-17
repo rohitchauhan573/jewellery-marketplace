@@ -47,6 +47,12 @@
         <option value="men">Men</option>
         <option value="unisex">Unisex</option>
       </select>
+            <select id="sort">
+        <option value="">Newest first</option>
+        <option value="price_asc">Price: low to high</option>
+        <option value="price_desc">Price: high to low</option>
+      </select>
+      <label class="check"><input id="verified" type="checkbox"> Verified only</label>
       <input id="min_price" type="number" min="0" placeholder="Min price">
       <input id="max_price" type="number" min="0" placeholder="Max price">
       <button id="apply" type="button">Apply</button>

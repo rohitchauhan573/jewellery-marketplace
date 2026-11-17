@@ -43,6 +43,8 @@ async function setShopStatus(id, status) {
   try {
     await apiFetch('/admin/shops/' + id + '/status', { method: 'PATCH', body: { status } });
     await loadShops();
+    loadShopReport();
+    loadStats();
   } catch (err) {
     if (!authFailed(err)) alert(err.message);
   }
@@ -146,6 +148,111 @@ async function loadRate() {
   }
 }
 
+// Upar ke numbers
+async function loadStats() {
+  const box = document.getElementById('stats');
+  if (!box) return;
+  try {
+    const s = await apiFetch('/admin/stats');
+    box.replaceChildren();
+    const count = (rows, key) => (rows.find((r) => r.status === key) || { n: 0 }).n;
+    const items = [
+      ['Shops approved', count(s.shops, 'approved')],
+      ['Shops waiting', count(s.shops, 'pending')],
+      ['Jewellery listed', s.products],
+      ['Customers', s.customers],
+      ['Orders placed', s.orders.reduce((sum, r) => sum + r.n, 0)],
+      ['Orders delivered', count(s.orders, 'delivered')],
+      ['Sales (not cancelled)', money(s.sales)],
+    ];
+    items.forEach(([label, value]) => {
+      const card = document.createElement('div');
+      card.className = 'stat';
+      const big = document.createElement('strong');
+      big.textContent = String(value);
+      const small = document.createElement('span');
+      small.textContent = label;
+      card.append(big, small);
+      box.appendChild(card);
+    });
+    if (s.top.length) {
+      const top = document.createElement('div');
+      top.className = 'stat stat-wide';
+      const title = document.createElement('span');
+      title.textContent = 'Best sellers';
+      top.appendChild(title);
+      s.top.forEach((t) => {
+        const p = document.createElement('p');
+        p.textContent = t.title + ': ' + t.sold + ' sold';
+        top.appendChild(p);
+      });
+      box.appendChild(top);
+    }
+  } catch (err) {
+    /* numbers optional, baaki page chalta rahe */
+  }
+}
+
+// Har shop ka hisaab
+async function loadShopReport() {
+  const box = document.getElementById('shop-report');
+  if (!box) return;
+  box.replaceChildren();
+
+  try {
+    const rows = await apiFetch('/admin/shop-stats');
+    if (!rows.length) {
+      box.textContent = 'No shops yet.';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.className = 'list';
+    table.appendChild(headRow([
+      'Shop', 'City', 'Status', 'Jewellery', 'In stock', 'Orders', 'Delivered', 'Cancelled', 'Units sold', 'Sales',
+    ]));
+
+    const total = { products: 0, stock: 0, orders: 0, delivered: 0, cancelled: 0, sold: 0, sales: 0 };
+
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+
+      const nameCell = document.createElement('td');
+      if (r.status === 'approved') {
+        const link = document.createElement('a');
+        link.href = 'shop.html?id=' + r.id;
+        link.textContent = r.name;
+        nameCell.appendChild(link);
+      } else {
+        nameCell.textContent = r.name;
+      }
+      tr.appendChild(nameCell);
+
+      [r.city, r.status, r.products, r.units_in_stock, r.orders_total, r.orders_delivered,
+        r.orders_cancelled, r.units_sold, money(r.sales)].forEach((v) => tr.appendChild(cell(v)));
+      table.appendChild(tr);
+
+      total.products += r.products;
+      total.stock += r.units_in_stock;
+      total.orders += r.orders_total;
+      total.delivered += r.orders_delivered;
+      total.cancelled += r.orders_cancelled;
+      total.sold += r.units_sold;
+      total.sales += r.sales;
+    });
+
+    const sum = document.createElement('tr');
+    sum.className = 'total-row';
+    ['All shops', '', '', total.products, total.stock, total.orders, total.delivered,
+      total.cancelled, total.sold, money(total.sales)].forEach((v) => sum.appendChild(cell(v)));
+    table.appendChild(sum);
+
+    box.appendChild(table);
+  } catch (err) {
+    if (!authFailed(err)) box.textContent = 'Could not load the shop report: ' + err.message;
+  }
+}
+
 document.querySelectorAll('[data-tab]').forEach((b) => {
   b.addEventListener('click', () => {
     currentTab = b.dataset.tab;
@@ -181,6 +288,8 @@ const me = Auth.user;
 if (!Auth.token || !me || me.role !== 'admin') {
   location.replace('login.html');
 } else {
+  loadStats();
+  loadShopReport();
   loadShops();
   loadRate();
   loadProducts();

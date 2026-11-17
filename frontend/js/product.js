@@ -147,7 +147,11 @@ function render(p) {
   const h1 = el('h1', null, p.title);
   if (p.is_verified) h1.appendChild(el('span', 'badge', 'Verified'));
   right.appendChild(h1);
-  right.appendChild(el('p', 'card-meta', p.shop_name + (p.city ? ', ' + p.city : '')));
+    const shopLine = el('p', 'card-meta');
+  const shopLink = el('a', null, p.shop_name);
+  shopLink.href = 'shop.html?id=' + p.shop_id;
+  shopLine.append(shopLink, p.city ? ', ' + p.city : '');
+  right.appendChild(shopLine);
   right.appendChild(el('div', 'price', money(p.price)));
 
   const table = el('table', 'specs');

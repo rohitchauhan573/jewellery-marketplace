@@ -17,8 +17,16 @@
     <h1>Admin panel</h1>
     <p id="status" class="status"></p>
 
+    <section id="stats" class="stats" aria-label="Site summary"></section>
+
     <section class="panel">
-      <h2>Shops</h2>
+      <h2>Shop-wise report</h2>
+      <p class="note report-note">Orders and sales do not include cancelled orders. Sales is the value of jewellery sold, before any delivery or payment charges.</p>
+      <div id="shop-report" class="table-wrap"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Shops waiting for a decision</h2>
       <div class="filters">
         <button type="button" data-tab="pending">Pending</button>
         <button type="button" data-tab="approved" class="secondary">Approved</button>

@@ -3,6 +3,8 @@ const statusEl = document.getElementById('status');
 const categorySelect = document.getElementById('category');
 const chipsBox = document.getElementById('chips');
 const titleEl = document.getElementById('page-title');
+const sortSelect = document.getElementById('sort');
+const verifiedBox = document.getElementById('verified');
 
 const FIELDS = ['q', 'category', 'purity', 'gender', 'min_price', 'max_price'];
 let categories = [];
@@ -126,6 +128,8 @@ async function loadProducts() {
     if (!value) return;
     params.set(id === 'category' ? 'category_id' : id, value);
   });
+  if (sortSelect && sortSelect.value) params.set('sort', sortSelect.value);
+  if (verifiedBox && verifiedBox.checked) params.set('verified', '1');
 
   titleEl.textContent = categoryName(categorySelect.value) || 'All jewellery';
   markChips();
@@ -165,7 +169,12 @@ async function loadRateBoard() {
       row.append(name, amount);
       rows.appendChild(row);
     });
-    dateEl.textContent = 'Per gram, updated ' + r.rate_date;
+    const today = new Date().toLocaleDateString('en-CA');
+    const outdated = r.rate_date < today;
+    dateEl.textContent = outdated
+      ? 'Per gram. Last updated ' + r.rate_date + ', not today'
+      : 'Per gram, updated today';
+    dateEl.classList.toggle('rate-stale', outdated);
   } catch (err) {
     rows.textContent = 'The gold rate has not been set yet.';
   }
@@ -174,12 +183,16 @@ async function loadRateBoard() {
 document.getElementById('apply').addEventListener('click', loadProducts);
 document.getElementById('reset').addEventListener('click', () => {
   FIELDS.forEach((id) => { document.getElementById(id).value = ''; });
+  if (sortSelect) sortSelect.value = '';
+  if (verifiedBox) verifiedBox.checked = false;
   loadProducts();
 });
 document.getElementById('q').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') loadProducts();
 });
 categorySelect.addEventListener('change', loadProducts);
+if (sortSelect) sortSelect.addEventListener('change', loadProducts);
+if (verifiedBox) verifiedBox.addEventListener('change', loadProducts);
 
 loadRateBoard();
 loadCategories().then(loadProducts);

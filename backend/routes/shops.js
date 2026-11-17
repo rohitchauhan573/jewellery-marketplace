@@ -87,4 +87,17 @@ router.patch('/mine', verifyToken, requireRole('shop_owner'), (req, res) => {
   }
 });
 
+// Public: ek approved shop ka page (ye sabse neeche rehna chahiye, '/mine' ke baad)
+router.get('/:id', (req, res) => {
+  const shop = db
+    .prepare("SELECT id, name, city, address, phone FROM shops WHERE id = ? AND status = 'approved'")
+    .get(req.params.id);
+  if (!shop) return res.status(404).json({ error: 'Shop not found' });
+
+  shop.product_count = db
+    .prepare('SELECT COUNT(*) AS n FROM products WHERE shop_id = ? AND stock > 0')
+    .get(shop.id).n;
+  res.json(shop);
+});
+
 module.exports = router;

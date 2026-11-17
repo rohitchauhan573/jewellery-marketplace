@@ -21,6 +21,13 @@ function cleanImage(value) {
 
 const IMAGE_ERROR = 'Photos must be an https link, or a PNG, JPG or WEBP image under about 1 MB';
 
+// Sort ke sirf ye tareeke allowed hain (SQL mein seedha user ka text nahi jata)
+const SORTS = {
+  newest: 'p.id DESC',
+  price_asc: 'p.price ASC, p.id DESC',
+  price_desc: 'p.price DESC, p.id DESC',
+};
+
 // Data wali photos list mein nahi bhejte (bahut bhaari), unke liye /:id/image use hota hai
 const LIST_SQL = `
   SELECT p.id, p.title, p.metal, p.purity, p.weight_g, p.making_charges, p.price, p.stock,
@@ -35,10 +42,13 @@ const LIST_SQL = `
   JOIN categories c ON c.id = p.category_id
 `;
 
-// Public: approved shops ke products, filters ke saath
+// Public: approved shops ke products, filters aur sort ke saath
 router.get('/', (req, res) => {
   try {
-    const { category_id, metal, purity, gender, occasion, min_price, max_price, q, shop_id } = req.query;
+    const {
+      category_id, metal, purity, gender, occasion,
+      min_price, max_price, q, shop_id, verified, sort,
+    } = req.query;
     const where = ["s.status = 'approved'", 'p.stock > 0'];
     const params = [];
 
@@ -51,9 +61,12 @@ router.get('/', (req, res) => {
     if (min_price)   { where.push('p.price >= ?');      params.push(Number(min_price)); }
     if (max_price)   { where.push('p.price <= ?');      params.push(Number(max_price)); }
     if (q)           { where.push('p.title LIKE ?');    params.push(`%${q}%`); }
+    if (verified === '1') where.push('p.is_verified = 1');
+
+    const order = SORTS[sort] || SORTS.newest;
 
     const rows = db
-      .prepare(`${LIST_SQL} WHERE ${where.join(' AND ')} ORDER BY p.id DESC`)
+      .prepare(`${LIST_SQL} WHERE ${where.join(' AND ')} ORDER BY ${order}`)
       .all(...params);
     res.json(rows);
   } catch (err) {
